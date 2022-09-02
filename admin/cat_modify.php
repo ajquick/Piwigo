@@ -97,69 +97,6 @@ if ( !isset( $_GET['cat_id'] ) || !is_numeric( $_GET['cat_id'] ) )
 }
 
 //--------------------------------------------------------- form criteria check
-if (isset($_POST['submit']))
-{
-  $data = array(
-    'id' => $_GET['cat_id'],
-    'name' => @$_POST['name'],
-    'comment' =>
-      $conf['allow_html_descriptions'] ?
-        @$_POST['comment'] : strip_tags(@$_POST['comment']),
-    );
-     
-  if ($conf['activate_comments'])
-  {
-    $data['commentable'] = isset($_POST['commentable'])? 'true':'false';
-  }
-
-  single_update(
-    CATEGORIES_TABLE,
-    $data,
-    array('id' => $data['id'])
-    );
-  if (isset($_POST['apply_commentable_on_sub']))
-  {
-    $subcats = get_subcat_ids(array('id' => $data['id']));
-    $query = '
-UPDATE '.CATEGORIES_TABLE.'
-  SET commentable = \''.$data['commentable'].'\'
-  WHERE id IN ('.implode(',', $subcats).')
-;';
-    pwg_query($query);
-  }
-
-  // retrieve cat infos before continuing (following updates are expensive)
-  $cat_info = get_cat_info($_GET['cat_id']);
-
-  $visible = false;
-  if (!isset($_POST['locked']))
-  {
-    $visible = true;
-  }
-
-  if ($visible !== $cat_info['visible'])
-  {
-    set_cat_visible(array($_GET['cat_id']), $visible);
-  }
-
-  // in case the use moves his album to the gallery root, we force
-  // $_POST['parent'] from 0 to null to be compared with
-  // $cat_info['id_uppercat']
-  if (empty($_POST['parent']))
-  {
-    $_POST['parent'] = null;
-  }
-
-  // only move virtual albums
-  if (empty($cat_info['dir']) and $cat_info['id_uppercat'] != $_POST['parent'])
-  {
-    move_categories( array($_GET['cat_id']), $_POST['parent'] );
-  }
-
-  $_SESSION['page_infos'][] = l10n('Album updated successfully');
-  pwg_activity('album', $_GET['cat_id'], 'edit');
-  $redirect = true;
-}
 
 if (isset($redirect))
 {
@@ -195,8 +132,6 @@ $navigation = get_cat_display_name_cache(
   get_root_url().'admin.php?page=album-'
   );
 
-$form_action = $admin_album_base_url.'-properties';
-
 //----------------------------------------------------- template initialization
 $template->set_filename( 'album_properties', 'cat_modify.tpl');
 
@@ -215,7 +150,7 @@ $template->assign(
     'CAT_ID'             => $category['id'],
     'CAT_NAME'           => @htmlspecialchars($category['name']),
     'CAT_COMMENT'        => @htmlspecialchars($category['comment']),
-    'IS_LOCKED' => !get_boolean($category['visible']),
+    'IS_LOCKED'          => $category['status'] == "private",
 
     'U_JUMPTO' => make_index_url(
       array(
@@ -225,10 +160,8 @@ $template->assign(
 
     'U_ADD_PHOTOS_ALBUM' => $base_url.'photos_add&amp;album='.$category['id'],
     'U_CHILDREN' => $cat_list_url.'&amp;parent_id='.$category['id'],
-    'U_HELP' => get_root_url().'admin/popuphelp.php?page=cat_modify',
+    //'U_HELP' => get_root_url().'admin/popuphelp.php?page=cat_modify',
     'U_MOVE' => $base_url.'albums#cat-'.$category['id'],
-
-    'F_ACTION' => $form_action,
     )
   );
  
@@ -297,6 +230,7 @@ $result = query2array($query);
 if (count($result) > 0) {
   $template->assign(
     array(
+      'INFO_CREATION_SINCE' => time_since($result[0]['occured_on'], 'day', $format=null, $with_text=true, $with_week=true, $only_last_unit=true),
       'INFO_CREATION' => l10n('Created on %s',format_date($result[0]['occured_on'], array('day', 'month','year')))
       )
     );
@@ -313,13 +247,14 @@ $result = query2array($query);
 if ($result[0]['COUNT(*)'] > 0) {
   $template->assign(
     array(
-      'INFO_DIRECT_SUB' => l10n('%d sub-albums',$result[0]['COUNT(*)'])
+      'INFO_DIRECT_SUB' => $result[0]['COUNT(*)']
       )
     );
 }
 
 $template->assign(array(
   'INFO_ID' => l10n('Numeric identifier : %d',$category['id']),
+  'INFO_LAST_MODIFIED_SINCE' => time_since($category['lastmodified'], 'minute', $format=null, $with_text=true, $with_week=true, $only_last_unit=true),
   'INFO_LAST_MODIFIED'=> l10n('Edited on %s',format_date($category['lastmodified'], array('day', 'month','year')))
     )
   );
@@ -399,6 +334,8 @@ if ($category['is_virtual'])
 {
   $template->assign('parent_category', empty($category['id_uppercat']) ? array() : array($category['id_uppercat']));
 }
+
+$template->assign('PWG_TOKEN', get_pwg_token());
 
 trigger_notify('loc_end_cat_modify');
 
