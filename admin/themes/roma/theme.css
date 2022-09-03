@@ -946,6 +946,10 @@ li.plupload_delete a:hover {background: url("images/cancelhover.svg")!important;
   color :  #c1c1c1 !important
 }
 
+.cat-modify-representative {
+  background-color: #333;
+}
+
 .cat-modify-info-content {
   color :  #c1c1c1 !important
 }

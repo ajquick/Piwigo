@@ -26,11 +26,23 @@ jQuery(document).ready(function() {
         save_button_set_loading(false)
 
         $('.info-message').show()
+        setTimeout(
+          function() {
+            $('.info-message').hide()
+          }, 
+          5000
+        )
       },
       error:function(XMLHttpRequest, textStatus, errorThrows) {
         save_button_set_loading(false)
 
         $('.info-error').show()
+        setTimeout(
+          function() {
+            $('.info-error').hide()
+          }, 
+          5000
+        )
         console.log(errorThrows);
       }
     });
@@ -50,72 +62,6 @@ jQuery(document).ready(function() {
     $('#cat-properties-save').attr("disabled", state)
   }
 
-  jQuery(document).on('click', '.refreshRepresentative',  function(e) {
-    var $this = jQuery(this);
-    var method = 'pwg.categories.refreshRepresentative';
-
-    jQuery.ajax({
-      url: "ws.php?format=json&method="+method,
-      type:"POST",
-      data: {
-        category_id: $this.data("category_id")
-      },
-      success:function(data) {
-        var data = jQuery.parseJSON(data);
-        if (data.stat == 'ok') {
-          jQuery(".deleteRepresentative").show();
-          
-          jQuery(".albumThumbailImage, .albumThumbnailRandom").on('load', function () {
-            cropImage();
-          })
-
-          jQuery(".albumThumbailImage, .albumThumbnailRandom")
-            .attr('src', data.result.src)
-            .end().show();
-          
-          jQuery(".albumThumbnailRandom").hide();
-        }
-        else {
-          alert("error on "+method);
-        }
-      },
-      error:function(XMLHttpRequest, textStatus, errorThrows) {
-        alert("serious error on "+method);
-      }
-    });
-
-    e.preventDefault();
-  });
-
-  jQuery(document).on('click', '.deleteRepresentative',  function(e) {
-    var $this = jQuery(this);
-    var method = 'pwg.categories.deleteRepresentative';
-
-    jQuery.ajax({
-      url: "ws.php?format=json&method="+method,
-      type:"POST",
-      data: {
-        category_id: $this.data("category_id")
-      },
-      success:function(data) {
-        var data = jQuery.parseJSON(data);
-        if (data.stat == 'ok') {
-          jQuery(".deleteRepresentative").hide();
-          jQuery(".albumThumbnailImage").hide();
-          jQuery(".albumThumbnailRandom").show();
-        }
-        else {
-          alert("error on "+method);
-        }
-      },
-      error:function(XMLHttpRequest, textStatus, errorThrows) {
-        alert("serious error on "+method);
-      }
-    });
-
-    e.preventDefault();
-  });
-
   $(".deleteAlbum").on("click", function() {
     
     $.confirm({
@@ -131,18 +77,32 @@ jQuery(document).ready(function() {
           success: function (raw_data) {
             let data = JSON.parse(raw_data).result[0]
 
-            let message = "<p>" + str_delete_album_and_his_x_subalbums.replace("%s", album_name).replace("%d", nb_sub_albums) + "</p>"
+            let message = "<p>" + str_delete_album_and_his_x_subalbums
+              .replace("%s", "<strong>"+album_name+"</strong>")
+              .replace("%d", "<strong>"+nb_sub_albums+"</strong>") + "</p>"
+            
 
-            message += "<p>" + str_album_and_subalbums_contain_x_photos.replace("%d", data.nb_images_recursive) + "</p>"
+            message += 
+              `<div  ${data.nb_images_recursive? "":"style='display:none'"}> 
+                <input type="radio" name="deletion-mode" value="no_delete" id="no_delete" checked>
+                <label for="no_delete">${str_dont_delete_photos}</label>
+              </div>`;
 
-            if (data.nb_images_recursive != 0) {
-              if (data.nb_images_associated_outside != 0) {
-                message += "<p>" + str_there_is_x_physically_linked_photos.replace("%d", data.nb_images_recursive + data.nb_images_associated_outside) + "</p>"
-              }
-              if (data.nb_images_becoming_orphan != 0) {
-                message += "<p>" + str_there_is_x_orphan_photos.replace("%d", data.nb_images_becoming_orphan) + "</p>"
-              }
+            if (data.nb_images_recursive) {
+              let t = 0
+              message += `<div> 
+                <input type="radio" name="deletion-mode" value="force_delete" id="force_delete">
+                <label for="force_delete">${str_delete_all_photos.replaceAll("%d", _ => [data.nb_images_recursive, data.nb_images_associated_outside][t++])}</label>
+              </div>`;
             }
+
+            if (data.nb_images_becoming_orphan)
+              message += 
+              `<div> 
+                <input type="radio" name="deletion-mode" value="delete_orphans" id="delete_orphans">
+                <label for="delete_orphans">${str_delete_orphans.replace("%d", data.nb_images_becoming_orphan)}</label>
+              </div>`;
+
             self.setContent(message)
           },
           error: function(message) {
@@ -156,21 +116,15 @@ jQuery(document).ready(function() {
           text: str_delete_album,
           btnClass: 'btn-red',
           action: function () {
-            delete_album("no_delete")
-          },
-        },
-        deleteAlbumAndOrphans: {
-          text: str_delete_album_and_orphans,
-          btnClass: 'btn-red',
-          action: function () {
-            delete_album("delete_orphans")
-          },
-        },
-        deleteAlbumAndPhotos: {
-          text:str_delete_album_and_photos,
-          btnClass: 'btn-red',
-          action: function () {
-            delete_album("force_delete")
+            this.showLoading()
+            let deletionMode = $('input[name="deletion-mode"]:checked').val();
+            delete_album(deletionMode)
+            .then(()=>window.location.href = u_delete)
+            .catch((err)=> {
+              this.close()
+              console.log(err)
+            })
+            return false
           },
         },
         cancel: {
@@ -185,7 +139,7 @@ jQuery(document).ready(function() {
     return new Promise((res, rej) => {
       $.ajax({
         url: "ws.php?format=json&method=pwg.categories.delete",
-        type: "GET",
+        type: "POST",
         data: {
           category_id: album_id,
           photo_deletion_mode: photo_deletion_mode,
@@ -195,11 +149,79 @@ jQuery(document).ready(function() {
           res()
         },
         error: function(message) {
-          rej()
+          rej(message)
         }
       });
     })
   }
+
+  $('#refreshRepresentative').on('click', function(e) {
+    var method = 'pwg.categories.refreshRepresentative';
+
+    $('#refreshRepresentative i').removeClass("icon-ccw").addClass("icon-spin6").addClass("animate-spin")
+
+    jQuery.ajax({
+      url: "ws.php?format=json&method="+method,
+      type:"POST",
+      data: {
+        category_id: album_id
+      },
+      success:function(data) {
+        var data = jQuery.parseJSON(data);
+        if (data.stat == 'ok') {
+          jQuery("#deleteRepresentative").show();
+
+          jQuery(".cat-modify-representative")
+            .attr('style', `background-image:url('${data.result.src}')`)
+            .removeClass('icon-dice-solid')
+          
+          }
+          else {
+            console.error(data);
+          }
+          $('#refreshRepresentative i').addClass("icon-ccw").removeClass("icon-spin6").removeClass("animate-spin")
+      },
+      error:function(XMLHttpRequest, textStatus, errorThrows) {
+        console.error(errorThrows);
+        $('#refreshRepresentative i').addClass("icon-ccw").removeClass("icon-spin6").removeClass("animate-spin")
+      }
+    });
+
+    e.preventDefault();
+  });
+
+  $('#deleteRepresentative').on('click',  function(e) {
+    var method = 'pwg.categories.deleteRepresentative';
+
+    $('#deleteRepresentative i').removeClass("icon-cancel").addClass("icon-spin6").addClass("animate-spin")
+
+    jQuery.ajax({
+      url: "ws.php?format=json&method="+method,
+      type:"POST",
+      data: {
+        category_id: album_id
+      },
+      success:function(data) {
+        var data = jQuery.parseJSON(data);
+        if (data.stat == 'ok') {
+          jQuery("#deleteRepresentative").hide();
+          jQuery(".cat-modify-representative")
+            .attr('style', ``)
+            .addClass('icon-dice-solid')
+        }
+        else {
+          console.error(data);
+        }
+        $('#deleteRepresentative i').addClass("icon-cancel").removeClass("icon-spin6").removeClass("animate-spin")
+      },
+      error:function(XMLHttpRequest, textStatus, errorThrows) {
+        console.error(errorThrows);
+        $('#deleteRepresentative i').addClass("icon-cancel").removeClass("icon-spin6").removeClass("animate-spin")
+      }
+    });
+
+    e.preventDefault();
+  });
 });
 
 

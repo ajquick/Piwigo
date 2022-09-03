@@ -152,6 +152,8 @@ $template->assign(
     'CAT_COMMENT'        => @htmlspecialchars($category['comment']),
     'IS_LOCKED'          => $category['status'] == "private",
 
+    'U_DELETE' => $base_url.'albums',
+
     'U_JUMPTO' => make_index_url(
       array(
         'category' => $category
@@ -275,15 +277,7 @@ $template->assign(array(
   'CACHE_KEYS' => get_admin_client_cache_keys(array('categories')),
   ));
 
-if ($category['is_virtual'])
-{
-  $template->assign(
-    array(
-      'U_DELETE' => $self_url.'&amp;delete='.$category['id'].'&amp;pwg_token='.get_pwg_token(),
-      )
-    );
-}
-else
+if (!$category['is_virtual'])
 {
   $category['cat_full_dir'] = get_complete_dir($_GET['cat_id']);
   $template->assign(

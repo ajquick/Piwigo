@@ -4,7 +4,6 @@
 
 {footer_script}
 jQuery(document).ready(function() {
-  $("h1").append(' <span style="letter-spacing:0">{$CATEGORIES_NAV}</span>');
 
   jQuery("input[name=who]").change(function () {
     checkWhoOptions();

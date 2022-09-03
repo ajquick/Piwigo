@@ -1,8 +1,6 @@
 {combine_script id='common' load='footer' path='admin/themes/default/js/common.js'}
 {footer_script require='jquery.ui.sortable'}
 jQuery(document).ready(function() {
-  $("h1").append(' <span style="letter-spacing:0">{$CATEGORIES_NAV}</span>');
-
   function checkOrderOptions() {
     jQuery("#image_order_user_define_options").hide();
     if (jQuery("input[name=image_order_choice]:checked").val() == "user_define") {

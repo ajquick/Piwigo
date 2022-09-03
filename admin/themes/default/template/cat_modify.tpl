@@ -10,16 +10,15 @@ const album_id = {$CAT_ID}
 const album_name = "{$CAT_NAME}"
 const nb_sub_albums = {$NB_SUBCATS}
 const pwg_token = '{$PWG_TOKEN}'
+const u_delete = '{$U_DELETE}'
 
 const str_cancel = '{'No, I have changed my mind'|@translate|@escape}'
 const str_delete_album = '{'Delete album'|@translate|escape:javascript}'
-const str_delete_album_and_his_x_subalbums = '{'Delete %s and his %d sub albums'|@translate|escape:javascript}'
-const str_album_and_subalbums_contain_x_photos = '{'Album and sub albums contain %d photos'|@translate|escape:javascript}'
-const str_there_is_x_orphan_photos = '{'You will create %d orphan photo(s)'|@translate|escape:javascript}'
+const str_delete_album_and_his_x_subalbums = '{'Delete album "%s" and its %d sub-albums.'|@translate|escape:javascript}'
 
-const str_there_is_x_physically_linked_photos = '{'There is %d photo(s) physically linked to this album (will be deleted with the album).'|@translate|escape:javascript}'
-const str_delete_album_and_orphans = '{'Delete album and orphan photos'|@translate|escape:javascript}';
-const str_delete_album_and_photos = '{'Delete album and all photos associated'|@translate|escape:javascript}';
+const str_dont_delete_photos = '{'delete only album, not photos'|@translate|escape:javascript}';
+const str_delete_orphans = '{'delete album and the %d orphan photos'|@translate|escape:javascript}';
+const str_delete_all_photos = '{'delete album and all %d photos, even the %d associated to other albums'|@translate|escape:javascript}';
 {/footer_script}
 
 <div class="cat-modify">
@@ -87,8 +86,27 @@ const str_delete_album_and_photos = '{'Delete album and all photos associated'|@
       {/if}
     </div>
 
-    <div class="cat-modify-representative {if !isset($representant)}icon-file-image{/if} " style="background-image:url('{$representant.picture.src}')">
-
+    <div 
+      class="cat-modify-representative {if !isset($representant)}icon-file-image{elseif !isset($representant.picture)}icon-dice-solid{/if}" 
+      {if !isset($representant)}title="{'No photos in the current album, no thumbnail available'|@translate}"{/if} 
+      {if isset($representant) && isset($representant.picture)}style="background-image:url('{$representant.picture.src}')"{/if}
+      >
+      {if $representant.ALLOW_SET_RANDOM || $representant.ALLOW_SET_RANDOM}
+      <div class="cat-modify-representative-actions">
+        {if $representant.ALLOW_SET_RANDOM }
+          <a class="refreshRepresentative" id="refreshRepresentative" title="{'Find a new representant by random'|@translate}">
+            <i class="icon-ccw"></i>
+            {'Refresh thumbnail'|@translate}
+          </a>
+        {/if}
+        {if isset($representant.ALLOW_DELETE)}
+          <a class="deleteRepresentative " id="deleteRepresentative" title="{'Delete Representant'|@translate}" style="{if !isset($representant.picture)}display:none{/if}">
+            <i class="icon-cancel"></i>
+            {'Remove thumbnail'|translate}
+          </a>
+        {/if}
+      </div>
+      {/if}
     </div>
 
     <div class="cat-modify-form">
