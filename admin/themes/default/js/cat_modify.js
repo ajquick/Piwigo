@@ -26,6 +26,8 @@ jQuery(document).ready(function() {
         save_button_set_loading(false)
 
         $('.info-message').show()
+        $('.cat-modification .cat-modify-info-subcontent').html(str_just_now)
+        $('.cat-modification .cat-modify-info-content').html(str_just_now)
         setTimeout(
           function() {
             $('.info-message').hide()
@@ -81,7 +83,7 @@ jQuery(document).ready(function() {
               .replace("%s", "<strong>"+album_name+"</strong>")
               .replace("%d", "<strong>"+nb_sub_albums+"</strong>") + "</p>"
             
-
+            message += `<div class="cat-delete-modes">`;
             message += 
               `<div  ${data.nb_images_recursive? "":"style='display:none'"}> 
                 <input type="radio" name="deletion-mode" value="no_delete" id="no_delete" checked>
@@ -102,6 +104,7 @@ jQuery(document).ready(function() {
                 <input type="radio" name="deletion-mode" value="delete_orphans" id="delete_orphans">
                 <label for="delete_orphans">${str_delete_orphans.replace("%d", data.nb_images_becoming_orphan)}</label>
               </div>`;
+            message += `</div>`;
 
             self.setContent(message)
           },

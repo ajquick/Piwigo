@@ -173,6 +173,8 @@ if ($conf['activate_comments'])
 }
 
 // manage album elements link
+$image_count = 0;
+$info_title = "";
 if ($category['has_images'])
 {
   $template->assign(
@@ -208,16 +210,29 @@ SELECT
       format_date($max_date)
       );
   }
-  $info_photos = l10n('%d photos', $image_count);
-
-  $template->assign(
-    array(
-      'INFO_PHOTO' => $info_photos,
-      'INFO_TITLE' => $info_title
-      )
-    );
-
+  
 }
+$info_photos = l10n('%d photos', $image_count);
+
+$template->assign(
+  array(
+    'INFO_PHOTO' => $info_photos,
+    'INFO_TITLE' => $info_title
+    )
+  );
+
+// total number of images under this category (including sub-categories)
+  $query = '
+SELECT DISTINCT
+    (image_id)
+  FROM 
+    '.IMAGE_CATEGORY_TABLE.'
+  WHERE 
+    category_id IN ('.implode(',', $subcat_ids).')
+  ;';
+  $image_ids_recursive = query2array($query, null, 'image_id');
+
+  $category['nb_images_recursive'] = count($image_ids_recursive);
 
 // date creation
 $query = '
@@ -233,7 +248,7 @@ if (count($result) > 0) {
   $template->assign(
     array(
       'INFO_CREATION_SINCE' => time_since($result[0]['occured_on'], 'day', $format=null, $with_text=true, $with_week=true, $only_last_unit=true),
-      'INFO_CREATION' => l10n('Created on %s',format_date($result[0]['occured_on'], array('day', 'month','year')))
+      'INFO_CREATION' => format_date($result[0]['occured_on'], array('day', 'month','year'))
       )
     );
 }
@@ -246,31 +261,32 @@ SELECT COUNT(*)
 ';
 $result = query2array($query);
 
-if ($result[0]['COUNT(*)'] > 0) {
-  $template->assign(
-    array(
-      'INFO_DIRECT_SUB' => $result[0]['COUNT(*)']
-      )
-    );
-}
+
+$template->assign(
+  array(
+    'INFO_DIRECT_SUB' => l10n(
+      '%d sub-albums',
+      $result[0]['COUNT(*)']
+    ), 
+    )
+  );
 
 $template->assign(array(
   'INFO_ID' => l10n('Numeric identifier : %d',$category['id']),
   'INFO_LAST_MODIFIED_SINCE' => time_since($category['lastmodified'], 'minute', $format=null, $with_text=true, $with_week=true, $only_last_unit=true),
-  'INFO_LAST_MODIFIED'=> l10n('Edited on %s',format_date($category['lastmodified'], array('day', 'month','year')))
-    )
-  );
+  'INFO_LAST_MODIFIED'=> format_date($category['lastmodified'], array('day', 'month','year')),
+  'INFO_IMAGES_RECURSIVE' => l10n(
+    '%d including sub-albums',
+    $category['nb_images_recursive']
+  ),
+  'INFO_SUBCATS' => l10n(
+    '%d in whole branch',
+    $category['nb_subcats']
+  ),
 
-// info for deletion
-$template->assign(
-  array(
-    'CATEGORY_FULLNAME' => trim(strip_tags($navigation)),
-    'NB_SUBCATS' => $category['nb_subcats'],
-    // 'NB_IMAGES_RECURSIVE' => $category['nb_images_recursive'],
-    // 'NB_IMAGES_BECOMING_ORPHAN' => $category['nb_images_becoming_orphan'],
-    // 'NB_IMAGES_ASSOCIATED_OUTSIDE' => $category['nb_images_associated_outside'],
-    )
-  );
+  'NB_SUBCATS' => $category['nb_subcats'],
+  ),
+);
 
 $template->assign(array(
   'U_MANAGE_RANKS' => $base_url.'element_set_ranks&amp;cat_id='.$category['id'],

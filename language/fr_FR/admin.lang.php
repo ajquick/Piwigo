@@ -1313,4 +1313,11 @@ $lang['and %d more'] = 'et %d autre(s)';
 $lang['Picture to associate formats with'] = 'Photo à associer avec les formats';
 $lang['The original picture will be detected with the filename (without extension).'] = 'La photo originale sera détectée en comparant les noms des fichiers (sans extension).';
 $lang['Delete %s format ?'] = 'Supprimer le format %s ?';
+$lang['Authorize publications'] = 'Authoriser les publications';
+$lang['Created'] = 'Créé';
+$lang['Modified'] = 'Modifié';
+$lang['%d including sub-albums'] = '%d en incluant les sous-albums';
+$lang['%d in whole branch'] = '%d dans toute la branche';
+$lang['Authorize comments'] = 'Autoriser les commentaires';
+$lang['Remove thumbnail'] = 'Retirer la miniature';
 // Leave this line empty

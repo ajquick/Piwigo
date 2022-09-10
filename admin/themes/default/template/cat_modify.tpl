@@ -15,6 +15,7 @@ const u_delete = '{$U_DELETE}'
 const str_cancel = '{'No, I have changed my mind'|@translate|@escape}'
 const str_delete_album = '{'Delete album'|@translate|escape:javascript}'
 const str_delete_album_and_his_x_subalbums = '{'Delete album "%s" and its %d sub-albums.'|@translate|escape:javascript}'
+const str_just_now = '{'Just now'|@translate|escape:javascript}'
 
 const str_dont_delete_photos = '{'delete only album, not photos'|@translate|escape:javascript}';
 const str_delete_orphans = '{'delete album and the %d orphan photos'|@translate|escape:javascript}';
@@ -24,7 +25,7 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
 <div class="cat-modify">
 
   <div class="cat-modify-header">
-    <div class="cat-modify-ariane icon-flow-tree">
+    <div class="cat-modify-ariane icon-sitemap">
       {$CATEGORIES_NAV}
     </div>
 
@@ -48,41 +49,39 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
       {if isset($U_DELETE) }
         <a class="icon-trash deleteAlbum tiptip" href="#" title="{'Delete album'|@translate}"></a>
       {/if} 
+
+      {* Comment for extensions to add their custom actions *}
     </div>
   </div>
 
   <div class="cat-modify-content">
 
     <div class="cat-modify-infos">
-      {if isset($INFO_CREATION)}
-      <div class="cat-modify-info-card">
+      <div class="cat-modify-info-card cat-creation">
         <span class="cat-modify-info-title">{'Created'|@translate}</span>
         <span class="cat-modify-info-content">{$INFO_CREATION_SINCE}</span>
         <span class="cat-modify-info-subcontent">{$INFO_CREATION}</span>
       </div>
-      {/if}
-      <div class="cat-modify-info-card">
+      <div class="cat-modify-info-card cat-modification">
         <span class="cat-modify-info-title">{'Modified'|@translate}</span>
         <span class="cat-modify-info-content">{$INFO_LAST_MODIFIED_SINCE}</span>
         <span class="cat-modify-info-subcontent">{$INFO_LAST_MODIFIED}</span>
       </div>
-      {if isset($INFO_PHOTO)}
-      <div title="{$INFO_TITLE}" class="cat-modify-info-card">
+      <div title="{$INFO_TITLE}" class="cat-modify-info-card cat-photos">
         <span class="cat-modify-info-title">{'Photos'|@translate}</span>
         <span class="cat-modify-info-content">{$INFO_PHOTO}</span>
+        <span class="cat-modify-info-subcontent">{$INFO_IMAGES_RECURSIVE}</span>
       </div>
-      {/if}
-      {if isset($INFO_DIRECT_SUB)}
-      <div class="cat-modify-info-card">
-        <span class="cat-modify-info-title">{'Sub-albums'|@translate}</span>
+      <div class="cat-modify-info-card cat-albums">
+        <span class="cat-modify-info-title">{'sub-albums'|@translate}</span>
         <span class="cat-modify-info-content">{$INFO_DIRECT_SUB}</span>
+        <span class="cat-modify-info-subcontent">{$INFO_SUBCATS}</span>
       </div>
-      {/if}
       {if isset($U_SYNC) }
       <div class="cat-modify-info-card">
         <span class="cat-modify-info-title">{'Directory'}</span>
         <span class="cat-modify-info-content">{$CAT_FULL_DIR}</span>
-      </div>$CAT_NAME
+      </div>
       {/if}
     </div>
 
@@ -94,13 +93,13 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
       {if $representant.ALLOW_SET_RANDOM || $representant.ALLOW_SET_RANDOM}
       <div class="cat-modify-representative-actions">
         {if $representant.ALLOW_SET_RANDOM }
-          <a class="refreshRepresentative" id="refreshRepresentative" title="{'Find a new representant by random'|@translate}">
+          <a class="refreshRepresentative buttonLike" id="refreshRepresentative" title="{'Find a new representant by random'|@translate}">
             <i class="icon-ccw"></i>
             {'Refresh thumbnail'|@translate}
           </a>
         {/if}
         {if isset($representant.ALLOW_DELETE)}
-          <a class="deleteRepresentative " id="deleteRepresentative" title="{'Delete Representant'|@translate}" style="{if !isset($representant.picture)}display:none{/if}">
+          <a class="deleteRepresentative buttonLike" id="deleteRepresentative" title="{'Delete Representant'|@translate}" style="{if !isset($representant.picture)}display:none{/if}">
             <i class="icon-cancel"></i>
             {'Remove thumbnail'|translate}
           </a>
@@ -118,6 +117,11 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
       <div class="cat-modify-input-container">
         <label for="cat-comment">{'Description'|@translate}</label>
         <textarea resize="false" rows="5" name="comment" id="cat-comment">{$CAT_COMMENT}</textarea>
+      </div>
+
+      <div class="cat-modify-input-container">
+        <label for="cat-parent">{'Parent album'|@translate}</label>
+        <div class="icon-pencil" id="cat-parent">{$CATEGORIES_NAV}</div>
       </div>
 
       {if isset($CAT_COMMENTABLE)}
