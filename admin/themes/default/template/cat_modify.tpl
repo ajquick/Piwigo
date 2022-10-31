@@ -90,7 +90,7 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
       {if !isset($representant)}title="{'No photos in the current album, no thumbnail available'|@translate}"{/if} 
       {if isset($representant) && isset($representant.picture)}style="background-image:url('{$representant.picture.src}')"{/if}
       >
-      {if $representant.ALLOW_SET_RANDOM || $representant.ALLOW_SET_RANDOM}
+      {if isset($representant) and ($representant.ALLOW_SET_RANDOM || $representant.ALLOW_SET_RANDOM)}
       <div class="cat-modify-representative-actions">
         {if $representant.ALLOW_SET_RANDOM }
           <a class="refreshRepresentative buttonLike" id="refreshRepresentative" title="{'Find a new representant by random'|@translate}">
