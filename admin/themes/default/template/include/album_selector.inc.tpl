@@ -9,13 +9,13 @@
       <span class="AddIcon icon-blue icon-plus-circled"></span>
     </div>
     <div class="AddIconTitle">
-      <span>{'Associate to album'|@translate}</span>
+      <span>{$title}</span>
     </div>
 
     <div id="linkedAlbumSearch">
       <span class='icon-search search-icon'> </span>
       <span class="icon-cancel search-cancel-linked-album"></span>
-      <input class='search-input' type='text' placeholder='{'Search'|@translate}'>
+      <input class='search-input' type='text' placeholder={$searchPlaceholder}>
     </div>
     <div class="limitReached"></div>
     <div class="noSearch"></div>

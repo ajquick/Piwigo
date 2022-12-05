@@ -1109,6 +1109,22 @@ SELECT id, name, dir
   {
     return new PwgError(403, implode('; ', $page['errors']));
   }
+
+  $query = '
+  SELECT uppercats
+    FROM '. CATEGORIES_TABLE .'
+    WHERE id IN ('. implode(',', $category_ids) .')
+  ;';
+  $result = pwg_query($query);
+  while ($row = pwg_db_fetch_assoc($result))
+  {
+    $cat_display_name = get_cat_display_name_cache(
+      $row['uppercats'],
+      'admin.php?page=album-'
+    );
+  }
+
+  return array('new_ariane_string' => $cat_display_name);
 }
 
 /**

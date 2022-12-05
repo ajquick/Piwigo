@@ -130,7 +130,22 @@ $category['nb_subcats'] = count($subcat_ids) - 1;
 $navigation = get_cat_display_name_cache(
   $category['uppercats'],
   get_root_url().'admin.php?page=album-'
+);
+
+// Parent navigation path
+$uppercats_array = explode(',', $category['uppercats']);
+if (count($uppercats_array) > 1)
+{
+  array_pop($uppercats_array);
+  $parent_navigation = get_cat_display_name_cache(
+    implode(',', $uppercats_array),
+    get_root_url().'admin.php?page=album-'
   );
+}
+else
+{
+  $parent_navigation = l10n('Root');
+}
 
 //----------------------------------------------------- template initialization
 $template->set_filename( 'album_properties', 'cat_modify.tpl');
@@ -147,6 +162,8 @@ if (!empty($category['id_uppercat']))
 $template->assign(
   array(
     'CATEGORIES_NAV'     => preg_replace("# {2,}#"," ",preg_replace("#(\r\n|\n\r|\n|\r)#"," ",$navigation)),
+    'CATEGORIES_PARENT_NAV' => preg_replace("# {2,}#"," ",preg_replace("#(\r\n|\n\r|\n|\r)#"," ",$parent_navigation)),
+    'PARENT_CAT_ID'      => !empty($category['id_uppercat']) ? $category['id_uppercat'] : 0,
     'CAT_ID'             => $category['id'],
     'CAT_NAME'           => @htmlspecialchars($category['name']),
     'CAT_COMMENT'        => @htmlspecialchars($category['comment']),

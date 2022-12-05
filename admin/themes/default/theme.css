@@ -625,6 +625,7 @@ LI.menuLi {
 .cat-modify-input-container #cat-parent::before {
   position: absolute;
   right: 12px;
+  margin-top: 4px;
 }
 
 .cat-modify-switch-container {

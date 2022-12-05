@@ -14,6 +14,7 @@ jQuery(document).ready(function() {
     jQuery.ajax({
       url: "ws.php?format=json&method=pwg.categories.setInfo",
       type:"POST",
+      dataType: "json",
       data: {
         category_id: album_id,
         name: $("#cat-name").val(),
@@ -23,17 +24,27 @@ jQuery(document).ready(function() {
         apply_commentable_to_subalbums: $("#cat-apply-commentable-on-sub").is(":checked")? "true":"false",
       },
       success:function(data) {
-        save_button_set_loading(false)
+        if (data.stat == "ok") {
+          save_button_set_loading(false)
 
-        $('.info-message').show()
-        $('.cat-modification .cat-modify-info-subcontent').html(str_just_now)
-        $('.cat-modification .cat-modify-info-content').html(str_just_now)
-        setTimeout(
-          function() {
-            $('.info-message').hide()
-          }, 
-          5000
-        )
+          $('.info-message').show()
+          $('.cat-modification .cat-modify-info-subcontent').html(str_just_now)
+          $('.cat-modification .cat-modify-info-content').html(str_just_now)
+          setTimeout(
+            function() {
+              $('.info-message').hide()
+            }, 
+            5000
+          )
+        } else {
+          $('.info-error').show()
+          setTimeout(
+            function() {
+              $('.info-error').hide()
+            }, 
+            5000
+          )
+        }
       },
       error:function(XMLHttpRequest, textStatus, errorThrows) {
         save_button_set_loading(false)
@@ -48,6 +59,38 @@ jQuery(document).ready(function() {
         console.log(errorThrows);
       }
     });
+
+    if (parent_album != default_parent_album) {
+      jQuery.ajax({
+        url: "ws.php?format=json&method=pwg.categories.move",
+        type:"POST",
+        dataType: "json",
+        data: {
+          category_id: album_id,
+          parent: parent_album,
+          pwg_token: pwg_token,
+        },
+        success: function (data) {
+          if (data.stat === "ok") {
+            $(".cat-modify-ariane").html(
+              data.result.new_ariane_string
+            )
+            default_parent_album = parent_album;
+          } else {
+            $('.info-error').show()
+            setTimeout(
+              function() {
+                $('.info-error').hide()
+              }, 
+              5000
+            )
+          }
+        },
+        error: function(e) {
+          console.log(e.message);
+        }
+      });
+    }
   })
 
   function save_button_set_loading(state = true) {
@@ -225,6 +268,148 @@ jQuery(document).ready(function() {
 
     e.preventDefault();
   });
+
+  // Parent album popin
+  $("#cat-parent.icon-pencil").on("click", function (e) {
+    // Don't open the popin if you click on the album link
+    if (e.target.localName != 'a') {
+      linked_albums_open();
+      set_up_popin();
+    }
+  });
+
+  $(".limitReached").html(str_no_search_in_progress);
+  $(".search-cancel-linked-album").hide();
+  $(".linkedAlbumPopInContainer .searching").hide();
+  $("#linkedAlbumSearch .search-input").on('input', function () {
+    if ($(this).val() != 0) {
+      $("#linkedAlbumSearch .search-cancel-linked-album").show()
+    } else {
+      $("#linkedAlbumSearch .search-cancel-linked-album").hide();
+    }
+
+    if ($(this).val().length > 2) {
+      linked_albums_search($(this).val());
+    } else {
+      $(".limitReached").html(str_no_search_in_progress);
+      $("#searchResult").empty();
+    }
+  })
+
+  $(".search-cancel-linked-album").on("click", function () {
+    $("#linkedAlbumSearch .search-input").val("");
+    $("#linkedAlbumSearch .search-input").trigger("input");
+  })
+
+  $(".related-categories-container .breadcrumb-item .remove-item").on("click", function () {
+    remove_related_category($(this).attr("id"));
+  })
 });
 
+// Parent album popin functions
+function set_up_popin() {
+  $(".ClosePopIn").on('click', function () {
+    linked_albums_close();
+  });
+}
 
+function linked_albums_close() {
+  $("#addLinkedAlbum").fadeOut();
+}
+function linked_albums_open() {
+  $("#addLinkedAlbum").fadeIn();
+  $(".search-input").val("");
+  $(".search-input").focus();
+  $("#searchResult").empty();
+  $(".limitReached").html(str_no_search_in_progress);
+}
+function linked_albums_search(searchText) {
+  $(".linkedAlbumPopInContainer .searching").show();
+  $.ajax({
+    url: "ws.php?format=json&method=pwg.categories.getAdminList",
+    type: "POST",
+    dataType: "json",
+    data : {
+      search: searchText,
+      additional_output: "full_name_with_admin_links",
+    },
+    before: function () {
+      
+    },
+    success: function (raw_data) {
+      $(".linkedAlbumPopInContainer .searching").hide();
+
+      categories = raw_data.result.categories;
+      fill_results(categories);
+
+      if (raw_data.result.limit_reached) {
+        $(".limitReached").html(str_result_limit.replace("%d", categories.length));
+      } else {
+        if (categories.length == 1) {
+          $(".limitReached").html(str_album_found);
+        } else {
+          $(".limitReached").html(str_albums_found.replace("%d", categories.length));
+        }
+      }
+    },
+    error: function (e) {
+      $(".linkedAlbumPopInContainer .searching").hide();
+      console.log(e.message);
+    }
+  })
+}
+
+function fill_results(cats) {
+  $("#searchResult").empty();
+  cats.forEach(cat => {
+    $("#searchResult").append(
+    "<div class='search-result-item'>" +
+      "<span class='search-result-path'>" + cat.fullname +"</span><span id="+ cat.id + " class='icon-plus-circled item-add'></span>" +
+    "</div>"
+    );
+
+    // If the searched albums are in the children of the current album they become unclickable
+    // Same if the album is already selected
+
+    if (parent_album == cat.id || cat.uppercats.split(',').includes(album_id+"")) {
+      $(".search-result-item #"+ cat.id +".item-add").addClass("notClickable").attr("title", str_already_in_related_cats).on("click", function (event) {
+        event.preventDefault();
+      });
+    } else {
+      $(".search-result-item #"+ cat.id +".item-add").on("click", function () {
+        add_related_category(cat.id, cat.full_name_with_admin_links);
+      });
+    }
+  });
+}
+
+function remove_related_category(cat_id) {
+  $(".invisible-related-categories-select option[value="+ cat_id +"]").remove();
+  $("#" + cat_id).parent().remove();
+
+  cat_to_remove_index = related_categories_ids.indexOf(cat_id);
+  if (cat_to_remove_index > -1) {
+    related_categories_ids.splice(cat_to_remove_index, 1);
+  }
+
+  check_related_categories();
+}
+
+function add_related_category(cat_id, cat_link_path) {
+  if (parent_album != cat_id) {
+
+    $("#cat-parent").html(
+      cat_link_path
+    );
+
+    $(".search-result-item #" + cat_id).addClass("notClickable");
+    parent_album = cat_id;
+    $(".invisible-related-categories-select").append("<option selected value="+ cat_id +"></option>");
+
+    $("#"+ cat_id).on("click", function () {
+      remove_related_category($(this).attr("id"))
+    })
+
+    linked_albums_close();
+  }
+}

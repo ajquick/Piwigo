@@ -7,6 +7,8 @@
 
 {footer_script}
 const album_id = {$CAT_ID}
+var parent_album = {$PARENT_CAT_ID}
+var default_parent_album = {$PARENT_CAT_ID}
 const album_name = "{$CAT_NAME}"
 const nb_sub_albums = {$NB_SUBCATS}
 const pwg_token = '{$PWG_TOKEN}'
@@ -20,6 +22,13 @@ const str_just_now = '{'Just now'|@translate|escape:javascript}'
 const str_dont_delete_photos = '{'delete only album, not photos'|@translate|escape:javascript}';
 const str_delete_orphans = '{'delete album and the %d orphan photos'|@translate|escape:javascript}';
 const str_delete_all_photos = '{'delete album and all %d photos, even the %d associated to other albums'|@translate|escape:javascript}';
+
+str_albums_found = '{"<b>%d</b> albums found"|translate}';
+str_album_found = '{"<b>1</b> album found"|translate}';
+str_result_limit = '{"<b>%d+</b> albums found, try to refine the search"|translate|escape:javascript}';
+str_orphan = '{'This photo is an orphan'|@translate}';
+str_no_search_in_progress = '{'No search in progress'|@translate}';
+str_already_in_related_cats = '{'This albums is already in related categories list'|translate}';
 {/footer_script}
 
 <div class="cat-modify">
@@ -121,8 +130,13 @@ const str_delete_all_photos = '{'delete album and all %d photos, even the %d ass
 
       <div class="cat-modify-input-container">
         <label for="cat-parent">{'Parent album'|@translate}</label>
-        <div class="icon-pencil" id="cat-parent">{$CATEGORIES_NAV}</div>
+        <div class="icon-pencil" id="cat-parent">{$CATEGORIES_PARENT_NAV}</div>
       </div>
+
+      {include file='include/album_selector.inc.tpl' 
+        title={'New parent album'|@translate}
+        searchPlaceholder={'Search'|@translate}
+      }
 
       {if isset($CAT_COMMENTABLE)}
       <div class="cat-modify-switch-container">
