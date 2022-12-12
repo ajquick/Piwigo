@@ -1320,4 +1320,8 @@ $lang['%d including sub-albums'] = '%d en incluant les sous-albums';
 $lang['%d in whole branch'] = '%d dans toute la branche';
 $lang['Authorize comments'] = 'Autoriser les commentaires';
 $lang['Remove thumbnail'] = 'Retirer la miniature';
+$lang['Allow comments down the line'] = 'Autoriser les commentaires pour toute la lignée';
+$lang['Disallow comments down the line'] = 'Interdire les commentaires pour toute la lignée';
+$lang['Comments allowed down the line'] = 'Commentaires autorisés pour toute la lignée';
+$lang['Comments disallowed down the line'] = 'Commentaires interdit pour toute la lignée';
 // Leave this line empty

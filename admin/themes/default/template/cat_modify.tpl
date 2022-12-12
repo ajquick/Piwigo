@@ -28,7 +28,9 @@ str_album_found = '{"<b>1</b> album found"|translate}';
 str_result_limit = '{"<b>%d+</b> albums found, try to refine the search"|translate|escape:javascript}';
 str_orphan = '{'This photo is an orphan'|@translate}';
 str_no_search_in_progress = '{'No search in progress'|@translate}';
-str_already_in_related_cats = '{'This albums is already in related categories list'|translate}';
+str_already_in_related_cats = '{'This albums is already in related categories list'|@translate}';
+str_album_comment_allow = '{'Comments allowed down the line'|@translate}';
+str_album_comment_disallow = '{'Comments disallowed down the line'|@translate}';
 {/footer_script}
 
 <div class="cat-modify">
@@ -58,6 +60,15 @@ str_already_in_related_cats = '{'This albums is already in related categories li
       {if isset($U_DELETE) }
         <a class="icon-trash deleteAlbum tiptip" href="#" title="{'Delete album'|@translate}"></a>
       {/if} 
+
+      {* <a class="icon-ellipsis-vert tiptip" href="#" title="{'Comments'|@translate}"></a> *}
+
+      <span class="icon-ellipsis-vert toggle-comment-option">
+        <div class="comment-option">
+          <span class="allow-comments icon-ok"> {'Allow comments down the line'|translate} </span>
+          <span class="disallow-comments icon-cancel" target="_blank">{'Disallow comments down the line'|@translate}</span>
+        </div>
+      </span>
 
       {* Comment for extensions to add their custom actions *}
     </div>
@@ -147,13 +158,6 @@ str_already_in_related_cats = '{'This albums is already in related categories li
           </label>
         </div>
         <label class="switch-label" for="cat-commentable"><span>{'Authorize comments'|@translate}</span> <i class="icon-help-circled tiptip" title="{'A photo can receive comments from your visitors if it belongs to an album with comments activated.'|@translate}" style="cursor:help"></i></label>
-        {if isset($INFO_DIRECT_SUB)}
-        <label class="font-checkbox" for="cat-apply-commentable-on-sub">
-          <span class="icon-check"></span>
-          <input type="checkbox" id="cat-apply-commentable-on-sub">
-          {'Apply to sub-albums'|@translate}
-        </label>
-        {/if}
       </div>
       {/if}
 
@@ -176,3 +180,62 @@ str_already_in_related_cats = '{'This albums is already in related categories li
     <span class="buttonLike" id="cat-properties-save"><i class="icon-floppy"></i> {'Save Settings'|@translate}</span>
   </div>
 </div>
+
+<style>
+.toggle-comment-option {
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-comment-option::before{
+  transform: scale(1.3);
+}
+
+.comment-option {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(130deg, #ff7700 0%, #ffa744 100%);
+  right: -10px;
+  top: 45px;
+  width: max-content;
+  border-radius: 10px;
+}
+
+.comment-option span, .comment-option a {
+  padding: 5px 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  text-align: initial;
+}
+
+.comment-option::after {
+  content: " ";
+  position: absolute;
+  top: -10px;
+  right: 21px;
+  transform: rotate(0deg);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #ff7700 transparent;
+}
+
+.comment-option span:first-child::before {
+  margin-right: -1px;
+}
+
+.comment-option span:hover:first-child {
+  color: white;
+  background-color: #00000012;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.comment-option span:hover:last-child {
+  color: white;
+  background-color: #00000012;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+</style>

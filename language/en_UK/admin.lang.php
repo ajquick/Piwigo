@@ -1323,4 +1323,8 @@ $lang['%d including sub-albums'] = '%d including sub-albums';
 $lang['%d in whole branch'] = '%d in whole branch';
 $lang['Authorize comments'] = 'Authorize comments';
 $lang['Remove thumbnail'] = 'Remove thumbnail';
+$lang['Allow comments down the line'] = 'Allow comments down the line';
+$lang['Disallow comments down the line'] = 'Disallow comments down the line';
+$lang['Comments allowed down the line'] = 'Comments allowed down the line';
+$lang['Comments disallowed down the line'] = 'Comments disallowed down the line';
 // Leave this line empty

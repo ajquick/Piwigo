@@ -958,11 +958,13 @@ li.plupload_delete a:hover {background: url("images/cancelhover.svg")!important;
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-.cat-modify-actions a:hover {
+.cat-modify-actions a:hover
+.cat-modify-actions .toggle-comment-option:hover  {
   color: white !important;
 }
 
-.cat-modify-actions a::after {
+.cat-modify-actions a::after,
+.cat-modify-actions .toggle-comment-option::after {
   background: #111 !important;
 }
 

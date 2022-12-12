@@ -1,4 +1,6 @@
 jQuery(document).ready(function() {
+  
+  activateCommentDropdown()
 
   jQuery('.tiptip').tipTip({
     'delay' : 0,
@@ -304,6 +306,93 @@ jQuery(document).ready(function() {
   $(".related-categories-container .breadcrumb-item .remove-item").on("click", function () {
     remove_related_category($(this).attr("id"));
   })
+
+  $(".allow-comments").on("click", function () {
+    if (!$("#cat-commentable").is(":checked")) {
+      $("#cat-commentable").trigger("click");
+    }
+    jQuery.ajax({
+      url: "ws.php?format=json&method=pwg.categories.setInfo",
+      type:"POST",
+      dataType: "json",
+      data: {
+        category_id: album_id,
+        commentable: true,
+        apply_commentable_to_subalbums: true,
+      },
+      success:function(data) {
+        if (data.stat == "ok") {
+          console.log("it worked");
+
+          temp_txt = $(".info-message").text();
+          $(".info-message").text(str_album_comment_allow);
+          $(".info-message").show();
+
+          setTimeout(
+            function() {
+              $('.info-message').hide()
+              $(".info-message").text(temp_txt);
+            }, 
+            5000
+          )
+        } else {
+          $('.info-error').show()
+          setTimeout(
+            function() {
+              $('.info-error').hide()
+            }, 
+            5000
+          )
+        }
+      },
+      error:function(e) {
+        console.log(e);
+      }
+    });
+  });
+  $(".disallow-comments").on("click", function () {
+    if ($("#cat-commentable").is(":checked")) {
+      $("#cat-commentable").trigger("click");
+    }
+    jQuery.ajax({
+      url: "ws.php?format=json&method=pwg.categories.setInfo",
+      type:"POST",
+      dataType: "json",
+      data: {
+        category_id: album_id,
+        commentable: false,
+        apply_commentable_to_subalbums: true,
+      },
+      success:function(data) {
+        if (data.stat == "ok") {
+          console.log("it worked");
+
+          temp_txt = $(".info-message").text();
+          $(".info-message").text(str_album_comment_disallow);
+          $(".info-message").show();
+
+          setTimeout(
+            function() {
+              $('.info-message').hide()
+              $(".info-message").text(temp_txt);
+            }, 
+            5000
+          )
+        } else {
+          $('.info-error').show()
+          setTimeout(
+            function() {
+              $('.info-error').hide()
+            }, 
+            5000
+          )
+        }
+      },
+      error:function(e) {
+        console.log(e);
+      }
+    });
+  });
 });
 
 // Parent album popin functions
@@ -412,4 +501,28 @@ function add_related_category(cat_id, cat_link_path) {
 
     linked_albums_close();
   }
+}
+
+function activateCommentDropdown() {
+  $(".toggle-comment-option").find(".comment-option").hide();
+
+  /* Display the option on the click on "..." */
+  $(".toggle-comment-option").on("click", function () {
+    $(this).find(".comment-option").toggle();
+  })
+
+  /* Hide img options and rename field on click on the screen */
+
+  $(document).mouseup(function (e) {
+    e.stopPropagation();
+    let option_is_clicked = false
+    $(".comment-option span").each(function () {
+      if (!($(this).has(e.target).length === 0)) {
+        option_is_clicked = true;
+      }
+    })
+    if (!option_is_clicked) {
+      $(".toggle-comment-option").find(".comment-option").hide();
+    }
+  });
 }

@@ -445,8 +445,15 @@ LI.menuLi {
   padding: 5px;
   color: #757575;
 }
+.cat-modify-actions .toggle-comment-option {
+  font-size: 16px;
+  padding: 5px;
+  width: 20px;
+  height: 24px;
+}
 
-.cat-modify-actions a::after {
+.cat-modify-actions a::after,
+.cat-modify-actions .toggle-comment-option::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -461,17 +468,20 @@ LI.menuLi {
   opacity: 0;
 }
 
-.cat-modify-actions a:hover {
+.cat-modify-actions a:hover,
+.cat-modify-actions .toggle-comment-option:hover {
   color: #444444;
 }
 
-.cat-modify-actions a:hover::after {
+.cat-modify-actions a:hover::after,
+.cat-modify-actions .toggle-comment-option:hover::after {
   width: 40px;
   height: 40px;
   opacity: 1;
 }
 
-.cat-modify-actions a::before {
+.cat-modify-actions a::before,
+.cat-modify-actions .toggle-comment-option::before {
   z-index: 1;
   position: absolute;
   top: 50%;
